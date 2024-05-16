@@ -1,0 +1,29 @@
+name: ${{ values.name }}
+runtime: yaml
+description: A minimal Pulumi YAML program
+
+resources:
+  bucket:
+    type: oci:ObjectStorage:Bucket
+    properties:
+      compartmentId: ${compartmentId}
+      namespace: ${namespace.namespace}
+      accessType: "ObjectReadWithoutList"
+
+  object:
+    type: oci:ObjectStorage:StorageObject
+    properties:
+      bucket: ${bucket.name}
+      namespace: ${namespace.namespace}
+      object: "index.html"
+      content: |
+        ${{values.content}}
+      contentType: "text/html"
+
+variables:
+  compartmentId: ocid1.compartment.oc1..aaaaaaaavt4axn32mx65ryw7cnnh6hctn3rwosbrudrovfpdah5diluehb5a
+  namespace:
+    fn::oci:ObjectStorage/getNamespace:getNamespace:
+
+outputs:
+  bucketURL: https://${bucket.namespace}.objectstorage.${oci:region}.oci.customer-oci.com/n/${bucket.namespace}/b/${bucket.name}/o/${object.object}
